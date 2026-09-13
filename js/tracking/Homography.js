@@ -7,43 +7,49 @@ export function orderCorners(corners) {
   return [...corners].sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x));
 }
 
-export function drawImageInQuad(context, image, sourceWidth, sourceHeight, quad) {
-  if (!image || !quad || quad.length !== 4) {
-    return;
-  }
+export function drawImageInQuad(context, image, quad) {
+  if (!image || !quad || quad.length !== 4) return;
 
   const ordered = orderCorners(quad);
   const [topLeft, topRight, bottomRight, bottomLeft] = ordered;
-  const middle = {
-    x: (topLeft.x + topRight.x + bottomRight.x + bottomLeft.x) / 4,
-    y: (topLeft.y + topRight.y + bottomRight.y + bottomLeft.y) / 4,
-  };
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  if (!sourceWidth || !sourceHeight) return;
 
-  drawTriangle(context, image, 0, 0, sourceWidth, 0, sourceWidth, sourceHeight, topLeft, topRight, bottomRight);
-  drawTriangle(context, image, 0, 0, sourceWidth, sourceHeight, 0, sourceHeight, topLeft, bottomRight, bottomLeft);
-
-  return middle;
+  drawTriangle(
+    context,
+    image,
+    { x: 0, y: 0 },
+    { x: sourceWidth, y: 0 },
+    { x: sourceWidth, y: sourceHeight },
+    topLeft,
+    topRight,
+    bottomRight,
+  );
+  drawTriangle(
+    context,
+    image,
+    { x: 0, y: 0 },
+    { x: sourceWidth, y: sourceHeight },
+    { x: 0, y: sourceHeight },
+    topLeft,
+    bottomRight,
+    bottomLeft,
+  );
 }
 
-function drawTriangle(context, image, sx0, sy0, sx1, sy1, sx2, sy2, dx0, dy0, dx1) {
-  const transform = solveAffine(
-    { x: sx0, y: sy0 },
-    { x: sx1, y: sy1 },
-    { x: sx2, y: sy2 },
-    { x: dx0.x, y: dx0.y },
-    { x: dy0.x, y: dy0.y },
-    { x: dx1.x, y: dx1.y },
-  );
+function drawTriangle(context, image, s0, s1, s2, d0, d1, d2) {
+  const transform = solveAffine(s0, s1, s2, d0, d1, d2);
 
   context.save();
   context.beginPath();
-  context.moveTo(dx0.x, dx0.y);
-  context.lineTo(dy0.x, dy0.y);
-  context.lineTo(dx1.x, dx1.y);
+  context.moveTo(d0.x, d0.y);
+  context.lineTo(d1.x, d1.y);
+  context.lineTo(d2.x, d2.y);
   context.closePath();
   context.clip();
   context.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f);
-  context.drawImage(image, 0, 0, image.naturalWidth || sourceFallback(image, true), image.naturalHeight || sourceFallback(image, false));
+  context.drawImage(image, 0, 0, image.naturalWidth || image.width, image.naturalHeight || image.height);
   context.restore();
 }
 
@@ -61,8 +67,4 @@ export function solveAffine(s0, s1, s2, d0, d1, d2) {
   const f = (d0.y * (s1.x * s2.y - s2.x * s1.y) + d1.y * (s2.x * s0.y - s0.x * s2.y) + d2.y * (s0.x * s1.y - s1.x * s0.y)) / denominator;
 
   return { a, b, c, d, e, f };
-}
-
-function sourceFallback(image, width) {
-  return width ? image.width : image.height;
 }
