@@ -13,7 +13,17 @@ WebXRTracker.prototype.requestHitTestSource = async function () {
 
 const originalStart = WebXRTracker.prototype.start;
 const originalCleanup = WebXRTracker.prototype.cleanup;
+const originalCreateAnchor = WebXRTracker.prototype.createAnchor;
 const originalPlace = ARManager.prototype.place;
+
+// eDraw only has one active template. Remove any previously rendered XR
+// anchors before creating the next one so repeated taps/repositioning cannot
+// leave duplicate templates in the scene.
+WebXRTracker.prototype.createAnchor = function (point) {
+  this.anchors?.clear();
+  this.pendingAnchorIds?.clear();
+  return originalCreateAnchor.call(this, point);
+};
 
 WebXRTracker.prototype.start = async function (...args) {
   const result = await originalStart.apply(this, args);
