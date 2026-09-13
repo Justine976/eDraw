@@ -1,6 +1,7 @@
 import { WebXRTracker } from "./WebXRTracker.js";
 
 const originalStart = WebXRTracker.prototype.start;
+const originalCleanup = WebXRTracker.prototype.cleanup;
 
 WebXRTracker.prototype.start = async function (...args) {
   const result = await originalStart.apply(this, args);
@@ -13,36 +14,47 @@ WebXRTracker.prototype.attachDomPlacementBridge = function () {
     return;
   }
 
-  this.domPlacementHandler = (event) => {
+  this.lastDomPlacementAt = 0;
+
+  const requestPlacementFromDom = (event) => {
     if (!this.session || !this.onWorldSelect) {
       return;
     }
 
-    if (event.target?.closest?.("button, input, select, textarea, a")) {
+    const target = event.target;
+
+    if (target?.closest?.("button, input, select, textarea, a, [data-no-xr-placement]")) {
       return;
     }
 
-    if (event.pointerType && event.pointerType !== "touch" && event.pointerType !== "pen") {
+    const now = performance.now();
+    if (now - this.lastDomPlacementAt < 350) {
       return;
     }
 
+    this.lastDomPlacementAt = now;
     event.preventDefault?.();
 
-    // The XR hit-test loop owns the actual world point. This touch only
-    // requests placement; the next valid hit automatically materializes it.
-    this.pendingWorldSelect = true;
+    // Use the native XR hit-test immediately when one already exists.
+    // Otherwise queue the request until the next valid hit arrives.
+    this.queuePlacement();
   };
 
+  this.domPlacementHandler = requestPlacementFromDom;
   this.overlayRoot.addEventListener("pointerup", this.domPlacementHandler, true);
+  this.overlayRoot.addEventListener("touchend", this.domPlacementHandler, {
+    capture: true,
+    passive: false,
+  });
 };
-
-const originalCleanup = WebXRTracker.prototype.cleanup;
 
 WebXRTracker.prototype.cleanup = function (...args) {
   if (this.overlayRoot && this.domPlacementHandler) {
     this.overlayRoot.removeEventListener("pointerup", this.domPlacementHandler, true);
+    this.overlayRoot.removeEventListener("touchend", this.domPlacementHandler, true);
   }
 
   this.domPlacementHandler = null;
+  this.lastDomPlacementAt = 0;
   return originalCleanup.apply(this, args);
 };
