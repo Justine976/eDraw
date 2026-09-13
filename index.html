@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111418">
+    <title>eDraw</title>
+    <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/camera.css">
+    <link rel="stylesheet" href="./css/ar.css">
+  </head>
+  <body>
+    <div class="app" id="app">
+      <section class="start-screen" id="startScreen" aria-labelledby="appTitle">
+        <header class="start-header">
+          <p class="eyebrow">Camera tracing workspace</p>
+          <h1 id="appTitle">eDraw</h1>
+        </header>
+
+        <section class="template-browser" aria-label="Drawing templates">
+          <div class="section-label">
+            <span>Template</span>
+            <button class="text-button" id="homeUploadButton" type="button">Upload</button>
+          </div>
+          <div class="template-grid" id="homeTemplateGrid"></div>
+        </section>
+
+        <div class="start-actions">
+          <div class="world-readiness" id="worldReadiness" aria-live="polite">
+            <span>World AR</span>
+            <strong id="worldReadinessText">Checking...</strong>
+          </div>
+          <button class="primary-button" id="startButton" type="button">Start World AR</button>
+          <button class="secondary-button" id="previewButton" type="button">Open Preview</button>
+          <p class="status-line" id="homeStatus" role="status">Choose a template, then start World AR.</p>
+        </div>
+      </section>
+
+      <main class="ar-screen" id="arScreen" hidden>
+        <video class="camera-feed" id="cameraFeed" autoplay muted playsinline></video>
+        <canvas class="scene-canvas" id="sceneCanvas" aria-label="AR drawing workspace"></canvas>
+
+        <div class="surface-reticle" id="surfaceReticle" aria-hidden="true">
+          <span class="reticle-box"></span>
+          <strong id="reticleLabel">Place</strong>
+        </div>
+
+        <header class="top-bar">
+          <button class="ghost-button" id="closeButton" type="button">Close</button>
+          <div class="status-stack">
+            <span class="tracking-badge" id="trackingBadge">Camera</span>
+            <span class="status-text" id="statusText">Ready</span>
+          </div>
+        </header>
+
+        <aside class="template-drawer" id="templateDrawer" hidden aria-label="Template library">
+          <div class="section-label">
+            <span>Templates</span>
+            <button class="text-button" id="drawerCloseButton" type="button">Done</button>
+          </div>
+          <div class="template-grid compact" id="arTemplateGrid"></div>
+          <button class="secondary-button full-width" id="drawerUploadButton" type="button">Upload template</button>
+        </aside>
+
+        <section class="control-rail" id="controlRail" aria-label="Template controls">
+          <label class="range-control">
+            <span>Opacity</span>
+            <input id="opacityRange" type="range" min="15" max="100" value="82">
+          </label>
+          <label class="range-control">
+            <span>Scale</span>
+            <input id="scaleRange" type="range" min="35" max="220" value="100">
+          </label>
+          <label class="range-control">
+            <span>Rotate</span>
+            <input id="rotationRange" type="range" min="-180" max="180" value="0">
+          </label>
+          <div class="calibration-pad" aria-label="Calibration nudges">
+            <button class="nudge-button" id="nudgeUpButton" type="button" aria-label="Move up">^</button>
+            <button class="nudge-button" id="nudgeLeftButton" type="button" aria-label="Move left">&lt;</button>
+            <button class="nudge-button" id="nudgeRightButton" type="button" aria-label="Move right">&gt;</button>
+            <button class="nudge-button" id="nudgeDownButton" type="button" aria-label="Move down">v</button>
+            <button class="nudge-button" id="rotateLeftButton" type="button" aria-label="Rotate left">CCW</button>
+            <button class="nudge-button" id="rotateRightButton" type="button" aria-label="Rotate right">CW</button>
+            <button class="nudge-button" id="scaleDownButton" type="button" aria-label="Scale down">-</button>
+            <button class="nudge-button" id="scaleUpButton" type="button" aria-label="Scale up">+</button>
+            <button class="nudge-button confirm" id="confirmButton" type="button" aria-label="Confirm calibration">OK</button>
+          </div>
+        </section>
+
+        <nav class="bottom-bar" aria-label="AR controls">
+          <button class="tool-button" id="placeButton" type="button">Place</button>
+          <button class="tool-button" id="traceButton" type="button">Trace</button>
+          <button class="tool-button" id="lockButton" type="button">Lock</button>
+          <button class="tool-button" id="resetButton" type="button">Reset</button>
+          <button class="tool-button" id="templatesButton" type="button">Templates</button>
+        </nav>
+      </main>
+
+      <input id="templateUpload" type="file" accept="image/png,image/jpeg,image/svg+xml" hidden>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

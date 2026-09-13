@@ -1,0 +1,53 @@
+.surface-reticle {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  width: 132px;
+  height: 96px;
+  color: var(--yellow);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.reticle-box {
+  display: block;
+  width: 92px;
+  height: 54px;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22), 0 0 28px rgba(241, 200, 91, 0.28);
+}
+
+.surface-reticle.is-ready {
+  color: var(--teal);
+}
+
+.surface-reticle.is-hidden {
+  opacity: 0;
+}
+
+.surface-reticle strong {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.scene-canvas.is-locked {
+  cursor: default;
+}
+
+.scene-canvas.is-editable {
+  cursor: grab;
+}
+
+.scene-canvas.is-editable:active {
+  cursor: grabbing;
+}
