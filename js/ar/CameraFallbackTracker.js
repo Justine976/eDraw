@@ -30,11 +30,32 @@ export class CameraFallbackTracker {
   }
 
   detectSurface() {
-    return this.lastSurface || {
-      available: false,
-      confidence: 0,
+    if (this.lastSurface) return this.lastSurface;
+
+    // Manual placement must still work when the lightweight paper detector
+    // cannot confidently identify the sheet. The tapped canvas position is
+    // the user's explicit placement instruction; tracking can take over once
+    // a valid paper candidate is found.
+    return {
+      available: true,
+      confidence: 0.18,
       mode: "camera-tracking",
-      tracking: "lost",
+      tracking: "manual",
+      point: { x: 0.5, y: 0.5 },
+      surface: {
+        x: 0.5,
+        y: 0.5,
+        width: 0.58,
+        height: 0.58 / 1.414,
+        aspect: 1.414,
+        corners: [
+          { x: 0.21, y: 0.295 },
+          { x: 0.79, y: 0.295 },
+          { x: 0.79, y: 0.705 },
+          { x: 0.21, y: 0.705 },
+        ],
+        confidence: 0.18,
+      },
     };
   }
 
@@ -44,8 +65,8 @@ export class CameraFallbackTracker {
     const anchor = {
       id,
       pose: {
-        x: point.x,
-        y: point.y,
+        x: point?.x ?? surface?.x ?? 0.5,
+        y: point?.y ?? surface?.y ?? 0.5,
         rotation: 0,
         scale: 1,
       },
@@ -68,7 +89,7 @@ export class CameraFallbackTracker {
     if (!anchor) return null;
 
     const surface = this.lastSurface?.surface;
-    if (surface && anchor.referenceSurface) {
+    if (surface && anchor.referenceSurface && this.lastSurface.tracking !== "manual") {
       const dx = surface.x - anchor.referenceSurface.x;
       const dy = surface.y - anchor.referenceSurface.y;
       const sx = surface.width / Math.max(0.001, anchor.referenceSurface.width);
